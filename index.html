@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>BlackJack Game</title>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+		<script defer src="script.js"></script>
+	</head>
+	<body>
+		<h1>Black Jack</h1>
+		<p id="message">Ready to play?</p>
+
+		<h2>Dealer: <span id="dealerNum"></span></h2>
+		<div id="dealerCards"></div>
+		<!--Need to add back image of card for dealer  -->
+
+		<h2>Player: <span id="playerSum"></span></h2>
+		<div id="playerCards"></div>
+		<!--Need to add back image of card for dealer  -->
+
+		<div class="buttonContainer">
+			<button id="start">Start</button>
+			<button id="increase">Increase</button>
+			<button id="decrease">Decrease</button>
+			<button id="hit">Hit</button>
+			<button id="stay">Stay</button>
+			<button id="double">Double</button>
+			<button id="restart">Restart Game</button>
+		</div>
+
+		<div id="results"></div>
+	</body>
+</html>
