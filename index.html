@@ -13,15 +13,20 @@
 		<p id="message">Ready to play?</p>
 
 		<h2>Dealer: <span id="dealerNum"></span></h2>
-		<div id="dealerCards"></div>
-		<!--Need to add back image of card for dealer  -->
+		<div id="dealerCards" class="deck">
+			<div id="cardTwo"></div>
+			<div id="cardFour"></div>
+		</div>
 
 		<h2>Player: <span id="playerSum"></span></h2>
-		<div id="playerCards"></div>
-		<!--Need to add back image of card for dealer  -->
+		<div id="playerCards" class="deck">
+			<div id="cardOne"></div>
+			<div id="cardThree"></div>
+		</div>
 
 		<div class="buttonContainer">
 			<button id="start">Start</button>
+			<button id="startHand">Start Hand</button>
 			<button id="increase">Increase</button>
 			<button id="decrease">Decrease</button>
 			<button id="hit">Hit</button>
@@ -30,6 +35,6 @@
 			<button id="restart">Restart Game</button>
 		</div>
 
-		<div id="results"></div>
+		<p id="bankRoll">Bank Roll:</p>
 	</body>
 </html>
