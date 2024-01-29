@@ -12,20 +12,26 @@
 		<h1>Black Jack</h1>
 		<p id="message">Ready to play?</p>
 
-		<h2>Dealer: <span id="dealerNum"></span></h2>
-		<div id="dealerCards" class="deck">
-			<div id="cardTwo"></div>
-			<div id="cardFour"></div>
-		</div>
-
+		<h2>Dealer: <span id="dealerSum"></span></h2>
 		<h2>Player: <span id="playerSum"></span></h2>
-		<div id="playerCards" class="deck">
-			<div id="cardOne"></div>
-			<div id="cardThree"></div>
+		<p id="bankRoll">Bank Roll:</p>
+
+		<div class="cardContainer">
+			<div id="dealerCards">
+				<img
+					id="hiddenCard"
+					src="https://www.deckofcardsapi.com/static/img/back.png"
+				/>
+				<img id="cardTwo" />
+				<img id="cardFour" />
+			<div id="playerCards">
+				<img id="cardOne" />
+				<img id="cardThree" />
+			</div>
 		</div>
 
 		<div class="buttonContainer">
-			<button id="start">Start</button>
+			<button id="start">Start Game</button>
 			<button id="startHand">Start Hand</button>
 			<button id="increase">Increase</button>
 			<button id="decrease">Decrease</button>
@@ -34,7 +40,5 @@
 			<button id="double">Double</button>
 			<button id="restart">Restart Game</button>
 		</div>
-
-		<p id="bankRoll">Bank Roll:</p>
 	</body>
 </html>

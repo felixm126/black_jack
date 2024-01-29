@@ -1,5 +1,6 @@
 body {
 	font-family: Arial, Helvetica, sans-serif;
+	/* Adjust for font from google, placeholder */
 	display: flex;
 	justify-items: center;
 	text-align: center;
@@ -14,20 +15,30 @@ h1 {
 
 h2 {
 	font-size: 20px;
+	flex-direction: column-reverse;
+	justify-content: center;
+}
+
+#dealerCards {
+	display: none;
 }
 
 .buttonContainer {
 	display: flex;
 	flex-wrap: wrap;
 	flex-direction: column-reverse;
-	font-size: 15px;
+	width: 100px;
+	height: 50px;
 }
 
 #bankRoll {
 	font-size: 20px;
 	flex-wrap: wrap;
-	flex-direction: column-reverse;
-	height: 50px;
-	width: 50px;
+	flex-direction: row-reverse;
 	align-content: center;
 }
+
+#hidden {
+	display: none;
+}
+/* players cards images */
