@@ -31,7 +31,9 @@ function newGame() {
 		try {
 			const response = await axios.get(`${apiUrl}${newDeck}`)
 			deckId = response.data.deck_id
-		} catch (error) {}
+		} catch (error) {
+			console.log(error)
+		}
 	})
 }
 
@@ -52,7 +54,9 @@ async function drawCard(cards) {
 			// if less than 1/4 of card remain, reshuffle.
 			restartGame()
 		}
-	} catch (error) {}
+	} catch (error) {
+		console.log(error)
+	}
 }
 
 // Draw a card 4 times to simulate alternating dealt cards between dealer and player
@@ -73,9 +77,13 @@ async function dealNewHand() {
 					dealerCards.push(card[0])
 					loadImage(card[0].image, dealerCardsImage)
 				}
+			} else {
+				console.log('No card Drawn')
 			}
 		}
-	} catch (error) {}
+	} catch (error) {
+		console.log(error)
+	}
 }
 
 function loadImage(url, cardContainer) {
@@ -104,6 +112,35 @@ function getValue(card) {
 	return parseInt(value)
 }
 
+function checkAce(card) {
+	if (card[0] == 'ACE') {
+		return 1
+	}
+	return 0
+}
+
+function getScore() {
+	let score = 0
+	playerCards.forEach((card) => {
+		score += getValue(card.value)
+	})
+	playerSum.textContent = `${score}`
+}
+
+hit.addEventListener('click', async () => {
+	if (ableToHit) {
+		let drawnCard = await drawCard(1)
+		playerCards.push(drawnCard[0])
+		loadImage(drawnCard[0].image, playerCardsImage)
+		getScore()
+	}
+})
+
+stay.addEventListener('click', async () => {
+	ableToHit = false
+	dealersTurn()
+})
+
 async function dealersTurn() {
 	while (dealerSum < 17) {
 		let drawnCard = await drawCard(1)
@@ -118,8 +155,10 @@ function checkWin() {
 	if (playerSum > 21) {
 		alert('You busted! Dealer wins!')
 		playerSum.textContent = `${playerSum}`
+		console.log('You Busted! Dealer wins!')
 	} else if (dealerSum > 21) {
 		alert('Dealer busts! Player wins!')
+		console.log('Player wins!')
 	} else if (playerSum > dealerSum) {
 		alert('Player wins!')
 	} else if (dealerSum > playerSum) {
@@ -137,4 +176,4 @@ function restartGame() {
 	dealerSum = ''
 }
 
-newGame()
+// newGame()
