@@ -19,12 +19,9 @@ const newDeck = 'new/shuffle/?deck_count=6'
 
 let playerCards = []
 let dealerCards = []
-
 let playerNumAces = 0
 let dealerNumAces = 0
-
 let ableToHit = true
-
 let deckId = ''
 
 // function to start game
@@ -33,9 +30,7 @@ function newGame() {
 		try {
 			const response = await axios.get(`${apiUrl}${newDeck}`)
 			deckId = response.data.deck_id
-		} catch (error) {
-			console.log(error)
-		}
+		} catch (error) {}
 	})
 }
 
@@ -46,20 +41,11 @@ async function drawCard(numCards) {
 		const response = await axios.get(
 			`${apiUrl}${deckId}/draw/?count=${numCards}`
 		)
-		console.log(response.status)
 
 		let cardValue = response.data.cards.value
-		console.log(cardValue)
-
 		let cardSuit = response.data.cards.suit
-		console.log(cardSuit)
-
 		let cardImage = response.data.cards.image
-		console.log(cardImage)
-
 		let cardVal = getValue(cardValue)
-		console.log(cardVal)
-
 		loadImage(cardImage)
 
 		let numCardsLeft = response.data.cards.remaining
@@ -67,9 +53,7 @@ async function drawCard(numCards) {
 			// if less than 1/4 of card remain, reshuffle.
 			restartGame()
 		}
-	} catch (error) {
-		console.log(error)
-	}
+	} catch (error) {}
 }
 
 // Draw a card 4 times to simulate alternating dealt cards between dealer and player
@@ -90,13 +74,9 @@ async function dealNewHand() {
 					dealerCards.push(card[0])
 					loadImage(card[0].image, dealerCardsImage)
 				}
-			} else {
-				console.log('No card Drawn')
 			}
 		}
-	} catch (error) {
-		console.log(error)
-	}
+	} catch (error) {}
 }
 
 function loadImage(url, container) {
@@ -110,6 +90,7 @@ function loadImage(url, container) {
 	image.crossOrigin = 'anonymous'
 	image.altalt = ''
 	image.src = url
+	return url
 }
 
 // get the Number value of the cards rank
@@ -127,4 +108,4 @@ function restartGame() {
 
 // dealing with Aces
 
-// newGame()
+newGame()
