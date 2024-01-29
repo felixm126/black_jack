@@ -9,8 +9,9 @@ const restart = document.querySelector('#restart')
 
 const playerSum = document.querySelector('#playerSum')
 const dealerSum = document.querySelector('#dealerSum')
-//back of card img hidden for now
-const hiddenCard = document.getElementById('hiddenCard')
+
+const cardContainer = document.querySelector('.cardContainer')
+const hiddenCard = document.getElementById('hiddenCard') //back of card img hidden for now
 const playerCardsImage = document.querySelector('#playerCards')
 const dealerCardsImage = document.querySelector('#dealerCards')
 
@@ -19,8 +20,8 @@ const newDeck = 'new/shuffle/?deck_count=6'
 
 let playerCards = []
 let dealerCards = []
-let playerNumAces = 0
-let dealerNumAces = 0
+let player = 0
+let dealer = 0
 let ableToHit = true
 let deckId = ''
 
@@ -34,13 +35,11 @@ function newGame() {
 	})
 }
 
-// api request to draw number of cards
-async function drawCard(numCards) {
+// api request to draw cards
+async function drawCard(cards) {
 	newGame()
 	try {
-		const response = await axios.get(
-			`${apiUrl}${deckId}/draw/?count=${numCards}`
-		)
+		const response = await axios.get(`${apiUrl}${deckId}/draw/?count=${cards}`)
 
 		let cardValue = response.data.cards.value
 		let cardSuit = response.data.cards.suit
@@ -48,8 +47,8 @@ async function drawCard(numCards) {
 		let cardVal = getValue(cardValue)
 		loadImage(cardImage)
 
-		let numCardsLeft = response.data.cards.remaining
-		if (numCardsLeft <= 78) {
+		let cardsLeft = response.data.cards.remaining
+		if (cardsLeft <= 78) {
 			// if less than 1/4 of card remain, reshuffle.
 			restartGame()
 		}
@@ -63,13 +62,13 @@ async function dealNewHand() {
 			let card = await drawCard(1)
 			if (card.length > 0) {
 				if (i % 2 !== 0) {
-					// odds will go to the player
+					// If odds - will go to the player
 					playerCards.push(card[0])
 					loadImage(card[0].image, playerCardsImage)
 				} else {
 					//evens will go to dealer
 					if (i === 4) {
-						hiddenCard.style.display = 'none'
+						hiddenCard.style.display = 'block'
 					}
 					dealerCards.push(card[0])
 					loadImage(card[0].image, dealerCardsImage)
@@ -79,7 +78,7 @@ async function dealNewHand() {
 	} catch (error) {}
 }
 
-function loadImage(url, container) {
+function loadImage(url, cardContainer) {
 	const image = new Image(200, 200)
 	image.addEventListener('load', () => cardImageUrl.prepend(image))
 	image.addEventListener('error', () => {
@@ -90,22 +89,52 @@ function loadImage(url, container) {
 	image.crossOrigin = 'anonymous'
 	image.altalt = ''
 	image.src = url
-	return url
 }
 
 // get the Number value of the cards rank
-function getValue(value) {
-	let val = value
-	if (isNaN(val)) {
-		if (value == 'ACE') return 11
+function getValue(card) {
+	let value = card
+
+	if (isNaN(value)) {
+		if (value == 'ACE') {
+			return 11
+		}
+		return 10
 	}
-	return 10
+	return parseInt(value)
+}
+
+async function dealersTurn() {
+	while (dealerSum < 17) {
+		let drawnCard = await drawCard(1)
+		dealerCards.push(drawnCard[0])
+		loadImage(drawnCard[0].image, dealerCardsImage)
+		getScore()
+	}
+	checkWin()
+}
+
+function checkWin() {
+	if (playerSum > 21) {
+		alert('You busted! Dealer wins!')
+		playerSum.textContent = `${playerSum}`
+	} else if (dealerSum > 21) {
+		alert('Dealer busts! Player wins!')
+	} else if (playerSum > dealerSum) {
+		alert('Player wins!')
+	} else if (dealerSum > playerSum) {
+		alert('Dealer wins!')
+	} else {
+		alert('Push!')
+	}
 }
 
 function restartGame() {
-	// logic to restart the game
-}
+	playerCards = []
+	dealerCards = []
 
-// dealing with Aces
+	playerSum = 0
+	dealerSum = ''
+}
 
 newGame()

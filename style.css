@@ -20,7 +20,7 @@ h2 {
 }
 
 #dealerCards {
-	display: none;
+	display: block;
 }
 
 .buttonContainer {
@@ -39,6 +39,8 @@ h2 {
 }
 
 #hidden {
-	display: none;
+	height: 200px;
+	width: 200px;
 }
+
 /* players cards images */
