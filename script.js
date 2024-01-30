@@ -55,7 +55,6 @@ async function dealNewHand() {
 		for (let i = 1; i < 5; i++) {
 			let card = await drawCard(1)
 			if (card) {
-				// Check if the card object is not undefined
 				if (i % 2 !== 0) {
 					playerCards.push(card)
 					loadImage(card.image, playerCardsImage)
@@ -98,17 +97,11 @@ function getFaceValue(card) {
 	if (isNaN(value)) {
 		if (value == 'ACE') {
 			return 11
+		} else if (value == 'KING' || value == 'QUEEN' || value == 'JACK') {
+			return 10
 		}
-		return 10
 	}
 	return parseInt(value)
-}
-
-function checkAce(card) {
-	if (card[0] == 'ACE') {
-		return 1
-	}
-	return 0
 }
 
 function checkHandValue() {
