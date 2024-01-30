@@ -1,59 +1,49 @@
-const start = document.querySelector('#startGame')
 const startHand = document.querySelector('#startHand')
-const increase = document.querySelector('#increase')
-const decrease = document.querySelector('#decrease')
 const hit = document.querySelector('#hit')
 const stay = document.querySelector('#stay')
-const double = document.querySelector('#double')
 const restart = document.querySelector('#restart')
 
 const playerSum = document.querySelector('#playerSum')
 const dealerSum = document.querySelector('#dealerSum')
 
-const cardContainer = document.querySelector('.cardContainer')
 const hiddenCard = document.getElementById('hiddenCard') //back of card img hidden for now
-const playerCardsImage = document.querySelector('#playerCards')
-const dealerCardsImage = document.querySelector('#dealerCards')
+const playerCardsImage = document.querySelector('.playerCards')
+const dealerCardsImage = document.querySelector('.dealerCards')
 
 const apiUrl = 'https://deckofcardsapi.com/api/deck/'
 const newDeck = 'new/shuffle/?deck_count=6'
 
 let playerCards = []
 let dealerCards = []
-let player = 0
-let dealer = 0
+
+let playerTotal = 0
+let dealerTotal = 0
+
 let ableToHit = true
+let roundOver = true
 let deckId = ''
 
 // function to start game
-function newGame() {
-	startHand.addEventListener('click', async () => {
-		try {
-			const response = await axios.get(`${apiUrl}${newDeck}`)
-			deckId = response.data.deck_id
-		} catch (error) {
-			console.log(error)
-		}
-	})
+async function newGame() {
+	try {
+		const response = await axios.get(`${apiUrl}${newDeck}`)
+		deckId = response.data.deck_id
+	} catch (error) {
+		console.log(error)
+	}
 }
 
 // api request to draw cards
 async function drawCard(cards) {
-	newGame()
 	try {
 		const response = await axios.get(`${apiUrl}${deckId}/draw/?count=${cards}`)
-
-		let cardValue = response.data.cards.value
-		let cardSuit = response.data.cards.suit
-		let cardImage = response.data.cards.image
-		let cardVal = getValue(cardValue)
-		loadImage(cardImage)
-
+		let card = response.data.cards[0]
 		let cardsLeft = response.data.cards.remaining
 		if (cardsLeft <= 78) {
 			// if less than 1/4 of card remain, reshuffle.
 			restartGame()
 		}
+		return card
 	} catch (error) {
 		console.log(error)
 	}
@@ -64,18 +54,17 @@ async function dealNewHand() {
 	try {
 		for (let i = 1; i < 5; i++) {
 			let card = await drawCard(1)
-			if (card.length > 0) {
+			if (card) {
+				// Check if the card object is not undefined
 				if (i % 2 !== 0) {
-					// If odds - will go to the player
-					playerCards.push(card[0])
-					loadImage(card[0].image, playerCardsImage)
+					playerCards.push(card)
+					loadImage(card.image, playerCardsImage)
 				} else {
-					//evens will go to dealer
+					dealerCards.push(card)
+					loadImage(card.image, dealerCardsImage)
 					if (i === 4) {
 						hiddenCard.style.display = 'block'
 					}
-					dealerCards.push(card[0])
-					loadImage(card[0].image, dealerCardsImage)
 				}
 			} else {
 				console.log('No card Drawn')
@@ -88,19 +77,22 @@ async function dealNewHand() {
 
 function loadImage(url, cardContainer) {
 	const image = new Image(200, 200)
-	image.addEventListener('load', () => cardImageUrl.prepend(image))
+	image.src = url
+
+	image.addEventListener('load', () => {
+		cardContainer.prepend(image)
+	})
 	image.addEventListener('error', () => {
 		const errMsg = document.createElement('output')
-		errMsg.value = `error loading image at ${url}`
-		imageUrl.append(errMsg)
+		errMsg.value = `Error loading image at ${url}`
+		cardContainer.append(errMsg)
 	})
 	image.crossOrigin = 'anonymous'
-	image.altalt = ''
-	image.src = url
+	image.alt = ''
 }
 
 // get the Number value of the cards rank
-function getValue(card) {
+function getFaceValue(card) {
 	let value = card
 
 	if (isNaN(value)) {
@@ -119,21 +111,66 @@ function checkAce(card) {
 	return 0
 }
 
-function getScore() {
-	let score = 0
+function checkHandValue() {
+	let playerTotal = 0
+	let dealerTotal = 0
+
 	playerCards.forEach((card) => {
-		score += getValue(card.value)
+		playerTotal += getFaceValue(card.value)
 	})
-	playerSum.textContent = `${score}`
+
+	dealerCards.forEach((card) => {
+		dealerTotal += getFaceValue(card.value)
+	})
+
+	playerSum.textContent = `${playerTotal}`
+	dealerSum.textContent = `${dealerTotal}`
 }
+
+function checkWin() {
+	checkHandValue()
+	let playerTotal = parseInt(playerSum.textContent)
+	let dealerTotal = parseInt(dealerSum.textContent)
+
+	if (playerTotal > 21) {
+		alert('You busted! Dealer wins!')
+		playerSum.textContent = `${playerSum}`
+		console.log('You Busted! Dealer wins!')
+	} else if (dealerTotal > 21) {
+		alert('Dealer busts! Player wins!')
+		console.log('Player wins!')
+	} else if (playerTotal > dealerTotal) {
+		alert('Player wins!')
+	} else if (dealerTotal > playerTotal) {
+		alert('Dealer wins!')
+	} else {
+		alert('Push!')
+	}
+}
+
+async function dealersTurn() {
+	if (!roundOver) {
+		checkHandValue()
+		while (dealerSum < 17) {
+			let drawnCard = await drawCard(1)
+			dealerCards.push(drawnCard[0])
+			loadImage(drawnCard[0].image, dealerCardsImage)
+			checkHandValue()
+		}
+		checkWin()
+	}
+}
+
+startHand.addEventListener('click', dealNewHand)
 
 hit.addEventListener('click', async () => {
 	if (ableToHit) {
 		let drawnCard = await drawCard(1)
 		playerCards.push(drawnCard[0])
 		loadImage(drawnCard[0].image, playerCardsImage)
-		getScore()
+		checkHandValue()
 	}
+	return
 })
 
 stay.addEventListener('click', async () => {
@@ -141,39 +178,16 @@ stay.addEventListener('click', async () => {
 	dealersTurn()
 })
 
-async function dealersTurn() {
-	while (dealerSum < 17) {
-		let drawnCard = await drawCard(1)
-		dealerCards.push(drawnCard[0])
-		loadImage(drawnCard[0].image, dealerCardsImage)
-		getScore()
-	}
-	checkWin()
-}
-
-function checkWin() {
-	if (playerSum > 21) {
-		alert('You busted! Dealer wins!')
-		playerSum.textContent = `${playerSum}`
-		console.log('You Busted! Dealer wins!')
-	} else if (dealerSum > 21) {
-		alert('Dealer busts! Player wins!')
-		console.log('Player wins!')
-	} else if (playerSum > dealerSum) {
-		alert('Player wins!')
-	} else if (dealerSum > playerSum) {
-		alert('Dealer wins!')
-	} else {
-		alert('Push!')
-	}
-}
-
 function restartGame() {
 	playerCards = []
 	dealerCards = []
 
+	playerCardsImage.innerHtml = ''
+	dealerCardsImage.innerHtml = ''
+
 	playerSum = 0
 	dealerSum = ''
-}
 
-// newGame()
+	newGame()
+}
+newGame()
