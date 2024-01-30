@@ -9,6 +9,7 @@ body {
 h1 {
 	font-size: 30px;
 }
+
 #message {
 	flex-direction: column;
 }

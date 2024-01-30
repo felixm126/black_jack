@@ -1,12 +1,16 @@
+// const start = document.querySelector('#startGame')
 const startHand = document.querySelector('#startHand')
+// const increase = document.querySelector('#increase')
+// const decrease = document.querySelector('#decrease')
 const hit = document.querySelector('#hit')
 const stay = document.querySelector('#stay')
+// const double = document.querySelector('#double')
 const restart = document.querySelector('#restart')
 
 const playerSum = document.querySelector('#playerSum')
 const dealerSum = document.querySelector('#dealerSum')
-
-const hiddenCard = document.getElementById('hiddenCard') //back of card img hidden for now
+//back of card img hidden for now
+const hiddenCard = document.getElementById('hiddenCard')
 const playerCardsImage = document.querySelector('.playerCards')
 const dealerCardsImage = document.querySelector('.dealerCards')
 
@@ -38,10 +42,9 @@ async function drawCard(cards) {
 	try {
 		const response = await axios.get(`${apiUrl}${deckId}/draw/?count=${cards}`)
 		let card = response.data.cards[0]
-		let cardsLeft = response.data.cards.remaining
+		let cardsLeft = response.data.remaining
 		if (cardsLeft <= 78) {
-			// if less than 1/4 of card remain, reshuffle.
-			restartGame()
+			restartGame() // Reshuffle if less than 1/4 of cards remain
 		}
 		return card
 	} catch (error) {
@@ -49,7 +52,7 @@ async function drawCard(cards) {
 	}
 }
 
-// Draw a card 4 times to simulate alternating dealt cards between dealer and player
+//deal card 4 times to simulate alternating dealt cards between dealer and player
 async function dealNewHand() {
 	try {
 		for (let i = 1; i < 5; i++) {
@@ -59,10 +62,13 @@ async function dealNewHand() {
 					playerCards.push(card)
 					loadImage(card.image, playerCardsImage)
 				} else {
-					dealerCards.push(card)
-					loadImage(card.image, dealerCardsImage)
-					if (i === 4) {
-						hiddenCard.style.display = 'block'
+					if (i === 2) {
+						dealerCards.push(card)
+						loadImage(card.image, dealerCardsImage)
+					} else if (i === 4) {
+						hiddenCard.style.display = 'none'
+						dealerCards.push({ value: card.value })
+						loadImage(card.image, dealerCardsImage)
 					}
 				}
 			} else {
@@ -77,7 +83,6 @@ async function dealNewHand() {
 function loadImage(url, cardContainer) {
 	const image = new Image(200, 200)
 	image.src = url
-
 	image.addEventListener('load', () => {
 		cardContainer.prepend(image)
 	})
@@ -96,6 +101,7 @@ function getFaceValue(card) {
 
 	if (isNaN(value)) {
 		if (value == 'ACE') {
+			console.log(value)
 			return 11
 		} else if (value == 'KING' || value == 'QUEEN' || value == 'JACK') {
 			return 10
@@ -105,9 +111,6 @@ function getFaceValue(card) {
 }
 
 function checkHandValue() {
-	let playerTotal = 0
-	let dealerTotal = 0
-
 	playerCards.forEach((card) => {
 		playerTotal += getFaceValue(card.value)
 	})
@@ -115,9 +118,20 @@ function checkHandValue() {
 	dealerCards.forEach((card) => {
 		dealerTotal += getFaceValue(card.value)
 	})
-
 	playerSum.textContent = `${playerTotal}`
 	dealerSum.textContent = `${dealerTotal}`
+
+	if (playerTotal === 21 && dealerTotal !== 21) {
+		alert('BlackJack')
+	} else if (dealerTotal === 21 && playerTotal !== 21) {
+		alert('Dealer has blackjack! Try again?')
+	} else if (playerTotal === 21 && dealerTotal === 21) {
+		alert("That's unfortunate. You both have blackjack. Push")
+	} else if (playerTotal > 21) {
+		ableToHit = false
+		roundOver = true
+		alert('You Busted! Dealer wins!')
+	}
 }
 
 function checkWin() {
@@ -126,50 +140,39 @@ function checkWin() {
 	let dealerTotal = parseInt(dealerSum.textContent)
 
 	if (playerTotal > 21) {
+		ableToHit = false
+		roundOver = true
 		alert('You busted! Dealer wins!')
-		playerSum.textContent = `${playerSum}`
-		console.log('You Busted! Dealer wins!')
 	} else if (dealerTotal > 21) {
+		roundOver = true
 		alert('Dealer busts! Player wins!')
-		console.log('Player wins!')
 	} else if (playerTotal > dealerTotal) {
+		roundOver = true
 		alert('Player wins!')
 	} else if (dealerTotal > playerTotal) {
+		roundOver = true
 		alert('Dealer wins!')
 	} else {
+		ableToHit = false
+		roundOver = true
 		alert('Push!')
 	}
 }
 
 async function dealersTurn() {
 	if (!roundOver) {
-		checkHandValue()
-		while (dealerSum < 17) {
+		while (parseInt(dealerSum.textContent) < 17) {
 			let drawnCard = await drawCard(1)
-			dealerCards.push(drawnCard[0])
-			loadImage(drawnCard[0].image, dealerCardsImage)
+			dealerCards.push(drawnCard)
+			if (dealerCards.length > 1) {
+				loadImage(dealerCards[dealerCards.length - 1])
+			}
 			checkHandValue()
 		}
 		checkWin()
+		roundOver = true
 	}
 }
-
-startHand.addEventListener('click', dealNewHand)
-
-hit.addEventListener('click', async () => {
-	if (ableToHit) {
-		let drawnCard = await drawCard(1)
-		playerCards.push(drawnCard[0])
-		loadImage(drawnCard[0].image, playerCardsImage)
-		checkHandValue()
-	}
-	return
-})
-
-stay.addEventListener('click', async () => {
-	ableToHit = false
-	dealersTurn()
-})
 
 function restartGame() {
 	playerCards = []
@@ -183,4 +186,25 @@ function restartGame() {
 
 	newGame()
 }
+
+startHand.addEventListener('click', dealNewHand)
+
+hit.addEventListener('click', async () => {
+	if (ableToHit) {
+		let drawnCard = await drawCard(1)
+		playerCards.push(drawnCard)
+		loadImage(drawnCard.image, playerCardsImage)
+		checkWin()
+	} else {
+		roundOver = false
+	}
+})
+
+stay.addEventListener('click', async () => {
+	ableToHit = false
+	roundOver = false
+	hiddenCard.style.display = 'none'
+	dealersTurn()
+})
+
 newGame()
