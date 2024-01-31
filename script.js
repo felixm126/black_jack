@@ -19,6 +19,8 @@ let bank = document.getElementById('bankRoll')
 let ableToHit = true
 let isRoundOver = true
 let deckId = ''
+let hiddenCardUrl = ''
+let backCardUrl = 'https://www.deckofcardsapi.com/static/img/back.png'
 
 // function to start game
 async function newGame() {
@@ -48,9 +50,18 @@ async function drawCard(cards) {
 
 async function dealNewHand() {
 	ableToHit = true
-	isRoundOver = true
+	isRoundOver = false
+
+	playerCards = []
+	dealerCards = []
+	hiddenCard.innerHTML = ''
+
+	const backImg = document.createElement('img')
+	backImg.src = backCardUrl
+	hiddenCard.appendChild(backImg)
 
 	updateHandTotal()
+
 	try {
 		for (let i = 0; i < 4; i++) {
 			let card = await drawCard(1)
@@ -61,8 +72,8 @@ async function dealNewHand() {
 				} else {
 					dealerCards.push(card)
 					if (i === 1) {
-					} else {
-						i === 3
+						hiddenCardUrl = card.image
+					} else if (i == 3) {
 						loadImage(card.image, dealerCardsImage)
 					}
 				}
@@ -81,7 +92,7 @@ function loadImage(url, cardContainer) {
 	image.src = url
 
 	image.addEventListener('load', () => {
-		cardContainer.prepend(image)
+		cardContainer.appendChild(image)
 	})
 	image.addEventListener('error', () => {
 		const errMsg = document.createElement('output')
@@ -98,10 +109,9 @@ function updateHandTotal() {
 		dealerSum.textContent = '0'
 		playerCards = []
 		dealerCards = []
-		playerCardsImage.innerHTML = ''
-		dealerCardsImage.innerHTML = ''
-		ableToHit = false
+		ableToHit = true
 		isRoundOver = false
+
 		hiddenCard.style.display = 'block'
 	} else {
 		const playerTotal = checkHandValue(playerCards)
@@ -111,6 +121,7 @@ function updateHandTotal() {
 		dealerSum.textContent = dealerTotal.toString()
 	}
 }
+
 function checkHandValue(cards, hideCard = true) {
 	let value = 0
 	let numAces = 0
@@ -141,10 +152,8 @@ function checkHandValue(cards, hideCard = true) {
 }
 
 async function dealersTurn() {
-	if (dealerCards.length > 1) {
-		hiddenCard.src = dealerCards[1].image
-		hiddenCard.style.display = 'block'
-	}
+	const hiddenImg = hiddenCard.querySelector('img')
+	hiddenImg.src = hiddenCardUrl
 
 	let dealerTotal = checkHandValue(dealerCards, false)
 	dealerSum.textContent = dealerTotal.toString()
@@ -173,13 +182,18 @@ function checkWin() {
 		ableToHit = false
 		isRoundOver = true
 		alert('You busted! Dealer wins!')
+		console.log('You Busted! Dealer wins!')
 	} else if (dealerTotal > 21) {
+		ableToHit = false
 		isRoundOver = true
 		alert('Dealer busts! Player wins!')
+		console.log('Player wins!')
 	} else if (playerTotal > dealerTotal) {
+		ableToHit = false
 		isRoundOver = true
 		alert('Player wins!')
 	} else if (dealerTotal > playerTotal) {
+		ableToHit = false
 		isRoundOver = true
 		alert('Dealer wins!')
 	} else {
@@ -202,12 +216,13 @@ hit.addEventListener('click', async () => {
 		const drawnCard = await drawCard(1)
 		playerCards.push(drawnCard)
 		loadImage(drawnCard.image, playerCardsImage)
-		updateHandTotal()
+		updateHandTotal(playerCards)
 	}
 })
 
 stay.addEventListener('click', () => {
 	ableToHit = false
+	isRoundOver = false
 	dealersTurn()
 })
 
