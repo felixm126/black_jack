@@ -9,7 +9,6 @@ body {
 h1 {
 	font-size: 30px;
 }
-
 #message {
 	flex-direction: column;
 }
@@ -31,20 +30,22 @@ h2 {
 }
 
 .buttonContainer {
-	width: auto;
-	height: auto;
+	display: block;
+	width: 20px;
+	height: 20px;
 	padding: 10px;
 }
 
 #bankRoll {
-	font-size: 20px;
+	font-size: 50px;
 	flex-wrap: wrap;
 	flex-direction: row-reverse;
-	align-content: center;
+	align-content: flex-end;
 }
 
 #hiddenCard {
+	display: none;
 	height: 200px;
 	width: 200px;
-	display: none;
 }
+/* players cards images */
