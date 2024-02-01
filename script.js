@@ -13,6 +13,7 @@ const apiUrl = 'https://deckofcardsapi.com/api/deck/'
 const newDeck = 'new/shuffle/?deck_count=6'
 const bank = document.getElementById('bankRoll')
 
+let bankCounter = 500
 let playerCards = []
 let dealerCards = []
 let ableToHit = true
@@ -20,6 +21,18 @@ let isRoundOver = true
 let deckId = ''
 let hiddenCardUrl = ''
 let backCardUrl = 'https://www.deckofcardsapi.com/static/img/back.png'
+
+document.addEventListener('DOMContentLoaded', () => {
+	const toggleButton = document.getElementById('toggleButton')
+
+	toggleButton.addEventListener('click', () => {
+		startHand.classList.toggle('buttonContainer')
+		hit.classList.toggle('buttonContainer')
+		stay.classList.toggle('buttonContainer')
+		restart.classList.toggle('buttonContainer')
+		toggleButton.style.display = 'none'
+	})
+})
 
 async function newGame() {
 	try {
@@ -100,13 +113,13 @@ function playersTurn() {
 }
 
 async function dealersTurn() {
-	if (!ableToHit && isRoundOver) {
+	if (!ableToHit || isRoundOver) {
 		// Reveal the hidden second dealer card
 		const hiddenImg = hiddenCard.querySelector('img')
 		if (hiddenImg) {
 			hiddenImg.src = hiddenCardUrl
 		}
-		let dealerTotal = checkHandValue(dealerCards, false)
+		let dealerTotal = checkHandValue(dealerCards, true)
 		dealerSum.textContent = dealerTotal.toString()
 
 		if (checkHandValue(playerCards) > 21) {
@@ -136,9 +149,6 @@ function checkHandValue(cards, hiddenCard = false) {
 	let numAces = 0
 
 	cards.forEach((card, i) => {
-		if (i === 1 && hiddenCard) {
-			return
-		}
 		if (card.value == 'ACE') {
 			numAces += 1
 			value += 11
@@ -164,12 +174,12 @@ function checkWin() {
 	const dealerTotal = checkHandValue(dealerCards, false)
 
 	if (playerTotal > 21) {
-		alert('Nice Try! Another Hand?')
-	} else if (dealerTotal > 21) {
+		alert('You Busted! Another Hand?')
+	} else if (dealerTotal > 21 && playerTotal <= 21) {
 		alert('Dealer busts! You win!')
 	} else if (playerTotal == dealerTotal) {
 		alert('How Unlucky... Push')
-	} else if (playerTotal > dealerTotal) {
+	} else if (playerTotal > dealerTotal && playerTotal <= 21) {
 		alert('Nice Hand!')
 	} else {
 		alert('Dealer wins!')
@@ -198,6 +208,8 @@ function restartGame() {
 	dealerCards = []
 	ableToHit = true
 	isRoundOver = false
+	bankCounter = 500
+	bank.textContent = `Bankroll: $${bankCounter}`
 	hiddenCard.innerHTML = ''
 	playerCardsImage.innerHTML = ''
 	dealerCardsImage.innerHTML = ''

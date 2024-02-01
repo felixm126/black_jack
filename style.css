@@ -13,6 +13,7 @@ h1 {
 	align-items: center;
 	flex-direction: column-reverse;
 	font-size: 90px;
+	color: black;
 }
 
 #message {
@@ -22,6 +23,7 @@ h1 {
 	align-items: center;
 	font-size: 35px;
 	font-style: italic;
+	color: black;
 }
 
 .dealerContainer {
@@ -58,7 +60,7 @@ h1 {
 }
 
 .buttonContainer {
-	display: flex;
+	display: none;
 	position: relative;
 	justify-content: center;
 	flex-direction: row;
