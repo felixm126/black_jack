@@ -39,7 +39,7 @@ async function newGame() {
 		const response = await axios.get(`${apiUrl}${newDeck}`)
 		deckId = response.data.deck_id
 	} catch (error) {
-		console.log('Error starting new game', error)
+		alert('Error 1')
 	}
 }
 
@@ -47,15 +47,15 @@ async function newGame() {
 async function drawCard(cards) {
 	try {
 		const response = await axios.get(`${apiUrl}${deckId}/draw/?count=${cards}`)
-		let card = response.data.cards[0] // Accessing the first card from the response
-		let cardsLeft = response.data.remaining
+		const card = response.data.cards[0] // Accessing the first card from the response
+		const cardsLeft = response.data.remaining
 
 		if (cardsLeft <= 78) {
 			await newGame() // Reshuffle if less than 1/4 of cards remain
 		}
 		return card
 	} catch (error) {
-		console.log(error)
+		alert('Error 2')
 	}
 }
 
@@ -72,7 +72,7 @@ async function dealNewHand() {
 
 	try {
 		for (let i = 0; i < 4; i++) {
-			let card = await drawCard(1)
+			const card = await drawCard(1)
 			if (i % 2 === 0) {
 				playerCards.push(card)
 				loadImage(card.image, playerCardsImage)
@@ -86,19 +86,51 @@ async function dealNewHand() {
 			}
 		}
 		updateHandTotal()
+
+		const dealerTotal = checkHandValue(dealerCards, false)
+		const isBlackJack = checkBJ()
+		const hiddenImg = hiddenCard.querySelector('img')
+
+		if (isBlackJack === 'push') {
+			if (hiddenImg) {
+				hiddenImg.src = hiddenCardUrl
+				dealerSum.textContent = dealerTotal.toString()
+			}
+			!ableToHit && isRoundOver
+			alert('Push. Both have BlackJack.')
+			return
+		} else if (isBlackJack === 'player') {
+			if (hiddenImg) {
+				hiddenImg.src = hiddenCardUrl
+				dealerSum.textContent = dealerTotal.toString()
+			}
+			!ableToHit && isRoundOver
+			alert('BlackJack! Nice Win!')
+			return
+		} else if (isBlackJack === 'dealer') {
+			if (hiddenImg) {
+				hiddenImg.src = hiddenCardUrl
+				dealerSum.textContent = dealerTotal.toString()
+			}
+			!ableToHit && isRoundOver
+			alert('Dealer has BlackJack..Try again.')
+			return
+		}
 	} catch (error) {
-		console.log('Error in dealing new hand:', error)
+		console.log(error)
+		alert('Error 3')
 	}
 }
 
 function updateHandTotal() {
 	const playerTotal = checkHandValue(playerCards)
+
 	playerSum.textContent = playerTotal.toString()
 
 	const hideDealerCard = !isRoundOver
 	const dealerTotal = checkHandValue(dealerCards, !isRoundOver)
-
 	dealerSum.textContent = dealerTotal.toString()
+
 	if (hideDealerCard) {
 		dealerSum.textContent = '??'
 	} else {
@@ -126,17 +158,13 @@ async function dealersTurn() {
 			checkWin()
 		} else {
 			while (dealerTotal < 17) {
-				let drawnCard = await drawCard(1)
+				const drawnCard = await drawCard(1)
 				if (drawnCard) {
 					dealerCards.push(drawnCard)
 					loadImage(drawnCard.image, dealerCardsImage)
-					dealerTotal = checkHandValue(dealerCards, true)
+					dealerTotal = checkHandValue(dealerCards, isRoundOver)
 					dealerSum.textContent = dealerTotal.toString()
 				}
-			}
-
-			if (dealerTotal > 21) {
-				alert('Dealer busts! Player wins!')
 			}
 			checkWin()
 		}
@@ -144,11 +172,11 @@ async function dealersTurn() {
 }
 
 // Check the number value of the cards rank in total
-function checkHandValue(cards, hiddenCard = false) {
+function checkHandValue(cards) {
 	let value = 0
 	let numAces = 0
 
-	cards.forEach((card, i) => {
+	cards.forEach((card) => {
 		if (card.value == 'ACE') {
 			numAces += 1
 			value += 11
@@ -167,6 +195,24 @@ function checkHandValue(cards, hiddenCard = false) {
 		numAces -= 1
 	}
 	return value
+}
+
+function checkBJ() {
+	let playerTotal = checkHandValue(playerCards)
+	let dealerTotal = checkHandValue(dealerCards, false)
+
+	const playerBJ = playerTotal === 21 && playerCards.length === 2
+	const dealerBJ = dealerTotal === 21 && dealerCards.length === 2
+
+	if (playerBJ && dealerBJ) {
+		return 'push'
+	} else if (playerBJ) {
+		return 'player'
+	} else if (dealerBJ) {
+		return 'dealer'
+	} else {
+		return 'none'
+	}
 }
 
 function checkWin() {
