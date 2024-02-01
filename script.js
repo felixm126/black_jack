@@ -4,16 +4,16 @@ const stay = document.querySelector('#stay')
 const restart = document.querySelector('#restart')
 const playerSum = document.querySelector('#playerSum')
 const dealerSum = document.querySelector('#dealerSum')
-
 const hiddenCard = document.getElementById('hiddenCard')
 const playerCardsImage = document.querySelector('.playerCards')
 const dealerCardsImage = document.querySelector('.dealerCards')
-
+const messageArea = document.getElementById('message')
 const apiUrl = 'https://deckofcardsapi.com/api/deck/'
 const newDeck = 'new/shuffle/?deck_count=6'
-const bank = document.getElementById('bankRoll')
+const minBet = 25
 
-let bankCounter = 500
+let startingBet = 25
+let bankCounter = 1000
 let playerCards = []
 let dealerCards = []
 let ableToHit = true
@@ -24,8 +24,9 @@ let backCardUrl = 'https://www.deckofcardsapi.com/static/img/back.png'
 
 document.addEventListener('DOMContentLoaded', () => {
 	const toggleButton = document.getElementById('toggleButton')
-
 	toggleButton.addEventListener('click', () => {
+		increase.classList.toggle('buttonContainer')
+		decrease.classList.toggle('buttonContainer')
 		startHand.classList.toggle('buttonContainer')
 		hit.classList.toggle('buttonContainer')
 		stay.classList.toggle('buttonContainer')
@@ -39,15 +40,14 @@ async function newGame() {
 		const response = await axios.get(`${apiUrl}${newDeck}`)
 		deckId = response.data.deck_id
 	} catch (error) {
-		alert('Error 1')
+		console.error('Error getting new deck')
 	}
 }
 
-// api request to draw cards
 async function drawCard(cards) {
 	try {
 		const response = await axios.get(`${apiUrl}${deckId}/draw/?count=${cards}`)
-		const card = response.data.cards[0] // Accessing the first card from the response
+		const card = response.data.cards[0]
 		const cardsLeft = response.data.remaining
 
 		if (cardsLeft <= 78) {
@@ -55,7 +55,7 @@ async function drawCard(cards) {
 		}
 		return card
 	} catch (error) {
-		alert('Error 2')
+		console.error('Error drawing new card')
 	}
 }
 
@@ -96,37 +96,42 @@ async function dealNewHand() {
 				hiddenImg.src = hiddenCardUrl
 				dealerSum.textContent = dealerTotal.toString()
 			}
-			!ableToHit && isRoundOver
-			alert('Push. Both have BlackJack.')
+			ableToHit = false
+			isRoundOver = true
+			bankCounter += startingBet
+			updateBetText()
+			console.log(`Push: ${startingBet}`)
 			return
 		} else if (isBlackJack === 'player') {
 			if (hiddenImg) {
 				hiddenImg.src = hiddenCardUrl
 				dealerSum.textContent = dealerTotal.toString()
 			}
-			!ableToHit && isRoundOver
-			alert('BlackJack! Nice Win!')
+			ableToHit = false
+			isRoundOver = true
+			bankCounter += startingBet * 2.5
+			console.log(`Win: ${startingBet * 2.5}`)
 			return
 		} else if (isBlackJack === 'dealer') {
 			if (hiddenImg) {
 				hiddenImg.src = hiddenCardUrl
 				dealerSum.textContent = dealerTotal.toString()
 			}
-			!ableToHit && isRoundOver
-			alert('Dealer has BlackJack..Try again.')
+			ableToHit = false
+			isRoundOver = true
+			console.log(`Lose: ${startingBet}`)
 			return
+		} else {
+			console.log('No blackjack')
 		}
 	} catch (error) {
-		console.log(error)
-		alert('Error 3')
+		console.error('Error dealing new hand')
 	}
 }
 
 function updateHandTotal() {
 	const playerTotal = checkHandValue(playerCards)
-
 	playerSum.textContent = playerTotal.toString()
-
 	const hideDealerCard = !isRoundOver
 	const dealerTotal = checkHandValue(dealerCards, !isRoundOver)
 	dealerSum.textContent = dealerTotal.toString()
@@ -200,7 +205,6 @@ function checkHandValue(cards) {
 function checkBJ() {
 	let playerTotal = checkHandValue(playerCards)
 	let dealerTotal = checkHandValue(dealerCards, false)
-
 	const playerBJ = playerTotal === 21 && playerCards.length === 2
 	const dealerBJ = dealerTotal === 21 && dealerCards.length === 2
 
@@ -211,7 +215,7 @@ function checkBJ() {
 	} else if (dealerBJ) {
 		return 'dealer'
 	} else {
-		return 'none'
+		return 'no'
 	}
 }
 
@@ -219,24 +223,27 @@ function checkWin() {
 	const playerTotal = checkHandValue(playerCards)
 	const dealerTotal = checkHandValue(dealerCards, false)
 
-	if (playerTotal > 21) {
-		alert('You Busted! Another Hand?')
+	if (playerTotal > 21 && dealerTotal <= 21) {
+		messageArea.textContent = 'Busted! Try again!'
 	} else if (dealerTotal > 21 && playerTotal <= 21) {
-		alert('Dealer busts! You win!')
+		bankCounter += startingBet * 2
+		messageArea.textContent = 'Dealer breaks. Nice win!'
 	} else if (playerTotal == dealerTotal) {
-		alert('How Unlucky... Push')
+		bankCounter += startingBet
+		messageArea.textContent = 'How unlucky..Push'
 	} else if (playerTotal > dealerTotal && playerTotal <= 21) {
-		alert('Nice Hand!')
+		bankCounter += startingBet * 2
+		messageArea.textContent = 'Winner Winner Chicken Dinner'
 	} else {
-		alert('Dealer wins!')
+		messageArea.textContent = 'Dealer wins!'
 	}
 	isRoundOver = true
+	updateBetText()
 }
 
 function loadImage(url, cardContainer) {
 	const image = new Image(200, 200)
 	image.src = url
-
 	image.addEventListener('load', () => {
 		cardContainer.appendChild(image)
 	})
@@ -249,47 +256,109 @@ function loadImage(url, cardContainer) {
 	image.alt = ''
 }
 
+function updateBetText() {
+	const displayBet = document.querySelector('#betAmount')
+	const displayBank = document.querySelector('#bankRoll')
+	displayBet.textContent = `Current Bet: ${startingBet}`
+	displayBank.textContent = `Bankroll: ${bankCounter}`
+}
+
 function restartGame() {
 	playerCards = []
 	dealerCards = []
 	ableToHit = true
 	isRoundOver = false
-	bankCounter = 500
-	bank.textContent = `Bankroll: $${bankCounter}`
+	bankCounter = 1000
+	startingBet = 25
 	hiddenCard.innerHTML = ''
 	playerCardsImage.innerHTML = ''
 	dealerCardsImage.innerHTML = ''
-
+	messageArea.innerHTML = 'Came back for more huh?'
+	updateBetText()
 	updateHandTotal()
-	dealNewHand()
+	newGame()
 }
 
-startHand.addEventListener('click', restartGame)
+increase.addEventListener('click', function () {
+	if (!ableToHit || isRoundOver) {
+		if (bankCounter >= startingBet + minBet) {
+			startingBet += minBet
+			updateBetText()
+		} else {
+			alert('You do not have enough. Lower your bet.')
+		}
+	} else {
+		alert('Not enough funds.')
+	}
+})
+
+decrease.addEventListener('click', function () {
+	if (!ableToHit || isRoundOver) {
+		if (startingBet - minBet >= minBet) {
+			startingBet -= minBet
+			updateBetText()
+		} else {
+			alert('Minimum is $25')
+		}
+	} else {
+		alert('Cant go any lower')
+	}
+})
+
+startHand.addEventListener('click', function () {
+	playerCards = []
+	dealerCards = []
+	ableToHit = true
+	isRoundOver = false
+	hiddenCard.innerHTML = ''
+	playerCardsImage.innerHTML = ''
+	dealerCardsImage.innerHTML = ''
+	messageArea.textContent = 'Good Luck!'
+	updateBetText()
+	updateHandTotal()
+
+	if (bankCounter >= startingBet) {
+		bankCounter -= startingBet
+		updateBetText()
+	} else {
+		alert('Not enough funds for the hand.')
+		ableToHit = false
+		isRoundOver = true
+		dealerSum.textContent = ''
+		return
+	}
+	dealNewHand()
+})
 
 hit.addEventListener('click', async () => {
-	if (ableToHit && checkHandValue(playerCards) <= 21) {
-		const drawnCard = await drawCard(1)
-		if (drawnCard) {
-			playerCards.push(drawnCard)
-			loadImage(drawnCard.image, playerCardsImage)
-			updateHandTotal()
-			if (checkHandValue(playerCards) > 21) {
-				ableToHit = false
-				isRoundOver = true
-				dealersTurn()
+	const isBlackJack = checkBJ()
+	if (isBlackJack === 'no' && !isRoundOver) {
+		if (ableToHit && checkHandValue(playerCards) <= 21) {
+			const drawnCard = await drawCard(1)
+			if (drawnCard) {
+				playerCards.push(drawnCard)
+				loadImage(drawnCard.image, playerCardsImage)
+				updateHandTotal()
+				if (checkHandValue(playerCards) > 21) {
+					ableToHit = false
+					isRoundOver = true
+					dealersTurn()
+				}
 			}
 		}
-	} else if (!ableToHit) {
-		alert('Cannot hit.')
 	}
 })
 
 stay.addEventListener('click', () => {
-	ableToHit = false
-	isRoundOver = true
-	dealersTurn()
+	const isBlackJack = checkBJ()
+	if (isBlackJack === 'no' && !isRoundOver) {
+		ableToHit = false
+		isRoundOver = true
+		dealersTurn()
+	}
 })
 
 restart.addEventListener('click', restartGame)
 
+updateBetText()
 newGame()

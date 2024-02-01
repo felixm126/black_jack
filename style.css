@@ -53,18 +53,26 @@ h1 {
 	font-size: 20px;
 	font-style: italic;
 }
+
+#betAmount {
+	display: flex;
+	position: relative;
+	justify-content: center;
+	align-items: flex-end;
+}
 .playerCards {
 	display: flex;
 	justify-content: center;
 	align-items: flex-end;
 }
 
-.buttonContainer {
+button.buttonContainer {
 	display: none;
 	position: relative;
 	justify-content: center;
 	flex-direction: row;
 	align-items: flex-end;
+	width: 50px;
 }
 
 .buttonContainer :hover {
