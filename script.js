@@ -11,7 +11,8 @@ const dealerCardsImage = document.querySelector('.dealerCards')
 
 const apiUrl = 'https://deckofcardsapi.com/api/deck/'
 const newDeck = 'new/shuffle/?deck_count=6'
-let bank = document.getElementById('bankRoll')
+const bank = document.getElementById('bankRoll')
+
 let playerCards = []
 let dealerCards = []
 let ableToHit = true
@@ -19,34 +20,6 @@ let isRoundOver = true
 let deckId = ''
 let hiddenCardUrl = ''
 let backCardUrl = 'https://www.deckofcardsapi.com/static/img/back.png'
-
-function restartGame() {
-	playerCards = []
-	dealerCards = []
-	ableToHit = true
-	isRoundOver = false
-	hiddenCard.innerHTML = ''
-	playerCardsImage.innerHTML = ''
-	dealerCardsImage.innerHTML = ''
-
-	updateHandTotal()
-	dealNewHand()
-}
-
-function updateHandTotal() {
-	const playerTotal = checkHandValue(playerCards)
-	playerSum.textContent = playerTotal.toString()
-
-	const hideDealerCard = !isRoundOver
-	const dealerTotal = checkHandValue(dealerCards, !isRoundOver)
-
-	dealerSum.textContent = dealerTotal.toString()
-	if (hideDealerCard) {
-		dealerSum.textContent = '??'
-	} else {
-		dealerSum.textContent = dealerTotal.toString()
-	}
-}
 
 async function newGame() {
 	try {
@@ -67,7 +40,7 @@ async function drawCard(cards) {
 		if (cardsLeft <= 78) {
 			await newGame() // Reshuffle if less than 1/4 of cards remain
 		}
-		return card // Returning the card object
+		return card
 	} catch (error) {
 		console.log(error)
 	}
@@ -105,6 +78,21 @@ async function dealNewHand() {
 	}
 }
 
+function updateHandTotal() {
+	const playerTotal = checkHandValue(playerCards)
+	playerSum.textContent = playerTotal.toString()
+
+	const hideDealerCard = !isRoundOver
+	const dealerTotal = checkHandValue(dealerCards, !isRoundOver)
+
+	dealerSum.textContent = dealerTotal.toString()
+	if (hideDealerCard) {
+		dealerSum.textContent = '??'
+	} else {
+		dealerSum.textContent = dealerTotal.toString()
+	}
+}
+
 function playersTurn() {
 	if (!ableToHit || isRoundOver) {
 		return
@@ -113,29 +101,62 @@ function playersTurn() {
 
 async function dealersTurn() {
 	if (!ableToHit && isRoundOver) {
-		// Reveal dealers hidden card
+		// Reveal the hidden second dealer card
 		const hiddenImg = hiddenCard.querySelector('img')
 		if (hiddenImg) {
 			hiddenImg.src = hiddenCardUrl
 		}
-
 		let dealerTotal = checkHandValue(dealerCards, false)
 		dealerSum.textContent = dealerTotal.toString()
 
-		while (dealerTotal < 17) {
-			let drawnCard = await drawCard(1)
-			if (drawnCard) {
-				dealerCards.push(drawnCard)
-				loadImage(drawnCard.image, dealerCardsImage)
-				dealerTotal = checkHandValue(dealerCards, false)
-				dealerSum.textContent = dealerTotal.toString()
+		if (checkHandValue(playerCards) > 21) {
+			checkWin()
+		} else {
+			while (dealerTotal < 17) {
+				let drawnCard = await drawCard(1)
+				if (drawnCard) {
+					dealerCards.push(drawnCard)
+					loadImage(drawnCard.image, dealerCardsImage)
+					dealerTotal = checkHandValue(dealerCards, true)
+					dealerSum.textContent = dealerTotal.toString()
+				}
 			}
+
+			if (dealerTotal > 21) {
+				alert('Dealer busts! Player wins!')
+			}
+			checkWin()
 		}
-		if (dealerTotal > 21) {
-			alert('Dealer busts! Player wins!')
-		}
-		checkWin()
 	}
+}
+
+// Check the number value of the cards rank in total
+function checkHandValue(cards, hiddenCard = false) {
+	let value = 0
+	let numAces = 0
+
+	cards.forEach((card, i) => {
+		if (i === 1 && hiddenCard) {
+			return
+		}
+		if (card.value == 'ACE') {
+			numAces += 1
+			value += 11
+		} else if (
+			card.value == 'KING' ||
+			card.value == 'QUEEN' ||
+			card.value == 'JACK'
+		) {
+			value += 10
+		} else {
+			value += parseInt(card.value)
+		}
+	})
+	while (value > 21 && numAces > 0) {
+		value -= 10
+		numAces -= 1
+	}
+	return value
 }
 
 function checkWin() {
@@ -143,15 +164,15 @@ function checkWin() {
 	const dealerTotal = checkHandValue(dealerCards, false)
 
 	if (playerTotal > 21) {
-		alert('You busted! Dealer wins!')
+		alert('Nice Try! Another Hand?')
 	} else if (dealerTotal > 21) {
-		alert('Dealer busts! Player wins!')
+		alert('Dealer busts! You win!')
+	} else if (playerTotal == dealerTotal) {
+		alert('How Unlucky... Push')
 	} else if (playerTotal > dealerTotal) {
-		alert('Player wins!')
-	} else if (dealerTotal > playerTotal) {
-		alert('Dealer wins!')
+		alert('Nice Hand!')
 	} else {
-		alert('Push!')
+		alert('Dealer wins!')
 	}
 	isRoundOver = true
 }
@@ -172,39 +193,20 @@ function loadImage(url, cardContainer) {
 	image.alt = ''
 }
 
-// Check the number value of the cards rank in total
-function checkHandValue(cards, hideCard = true) {
-	let value = 0
-	let numAces = 0
+function restartGame() {
+	playerCards = []
+	dealerCards = []
+	ableToHit = true
+	isRoundOver = false
+	hiddenCard.innerHTML = ''
+	playerCardsImage.innerHTML = ''
+	dealerCardsImage.innerHTML = ''
 
-	cards.forEach((card, i) => {
-		if (i === 3 && hideCard) {
-			return
-		}
-		if (card.value == 'ACE') {
-			numAces += 1
-			value += 11
-		} else if (
-			card.value == 'KING' ||
-			card.value == 'QUEEN' ||
-			card.value == 'JACK'
-		) {
-			value += 10
-		} else {
-			value += parseInt(card.value)
-		}
-	})
-
-	while (value > 21 && numAces > 0) {
-		value -= 10
-		numAces -= 1
-	}
-	console.log(`Number of aces:${numAces}`)
-	console.log(`Hand Value: ${value}`)
-	return value
+	updateHandTotal()
+	dealNewHand()
 }
 
-startHand.addEventListener('click', dealNewHand)
+startHand.addEventListener('click', restartGame)
 
 hit.addEventListener('click', async () => {
 	if (ableToHit && checkHandValue(playerCards) <= 21) {
@@ -216,7 +218,6 @@ hit.addEventListener('click', async () => {
 			if (checkHandValue(playerCards) > 21) {
 				ableToHit = false
 				isRoundOver = true
-				alert('Busted!')
 				dealersTurn()
 			}
 		}
