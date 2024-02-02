@@ -73,7 +73,6 @@ Ace: Face value either 1 or 11.
 Hit: Deal me another card.
 Stand: No more cards, keep your hand.
 Double: Doubling your bet for only one more card.
-Split: Double your bet, split your pair into two separate hands, and continue with the round.
 
 Hard Number: A hand not containing an Ace with its face value being fixed.
 ie. 5 + 10 = 15

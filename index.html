@@ -7,6 +7,10 @@
 		<link rel="stylesheet" type="text/css" href="style.css" />
 		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 		<script defer src="script.js"></script>
+		<link
+			href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap"
+			rel="stylesheet"
+		/>
 	</head>
 	<body>
 		<h1>Black Jack</h1>
@@ -14,21 +18,23 @@
 		<h2>Dealer: <span id="dealerSum"></span></h2>
 		<div class="dealerContainer">
 			<div id="hiddenCard"></div>
-			<div class="dealerCards"></div>
+			<div id="dealerWins" class="dealerCards"></div>
 		</div>
 		<h2>Player: <span id="playerSum"></span></h2>
 		<p id="bankRoll">Bank Roll:</p>
 		<div class="playerCards"></div>
 		<div>
 			<p id="betAmount"></p>
-			<button id="toggleButton">Start</button>
-			<button id="startHand" class="buttonContainer">Start Hand</button>
-			<button id="increase" class="buttonContainer">Increase</button>
-			<button id="decrease" class="buttonContainer">Decrease</button>
-			<button id="hit" class="buttonContainer">Hit</button>
-			<button id="double" class="buttonContainer">Double Down</button>
-			<button id="stay" class="buttonContainer">Stay</button>
-			<button id="restart" class="buttonContainer">Restart Game</button>
+			<div class="buttonContainer">
+				<button id="toggleButton">Start</button>
+				<button id="startHand" class="buttonContainer">Start Hand</button>
+				<button id="increase" class="buttonContainer">Increase</button>
+				<button id="decrease" class="buttonContainer">Decrease</button>
+				<button id="hit" class="buttonContainer">Hit</button>
+				<button id="double" class="buttonContainer">Double Down</button>
+				<button id="stay" class="buttonContainer">Stay</button>
+				<button id="restart" class="buttonContainer">Restart Game</button>
+			</div>
 		</div>
 	</body>
 </html>

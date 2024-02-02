@@ -1,9 +1,8 @@
 body {
-	font-family: Arial, Helvetica, sans-serif;
-	/* Adjust for font from google, placeholder */
+	font-family: 'Playfair Display', serif;
 	justify-content: space-around;
 	text-align: center;
-	background-color: green;
+	background: linear-gradient(to right, #0a4434, green);
 	color: white;
 }
 
@@ -13,7 +12,7 @@ h1 {
 	align-items: center;
 	flex-direction: column-reverse;
 	font-size: 90px;
-	color: black;
+	color: #c3a343;
 }
 
 #message {
@@ -60,24 +59,27 @@ h1 {
 	justify-content: center;
 	align-items: flex-end;
 }
+
 .playerCards {
 	display: flex;
 	justify-content: center;
 	align-items: flex-end;
 }
 
-button.buttonContainer {
-	display: none;
+.playerWinsAnimation {
+	font-family: 'Montserrat';
+	font-weight: 800;
+	font-size: 3.5rem;
+	word-spacing: 1rem;
+}
+.buttonContainer button {
+	display: inline-flex;
 	position: relative;
-	justify-content: center;
+	justify-content: space-evenly;
 	flex-direction: row;
-	align-items: flex-end;
-	width: 50px;
-}
-.buttonVisible {
-	display: block;
-}
-.buttonContainer:hover {
-	background-color: blue;
-	color: white;
+	align-items: center;
+	width: 10%;
+	height: 75px;
+	border: 2px double goldenrod;
+	font-size: 15px;
 }

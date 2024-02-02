@@ -234,9 +234,13 @@ function checkWin() {
 		messageArea.textContent = 'How unlucky..Push'
 	} else if (playerTotal > dealerTotal && playerTotal <= 21) {
 		bankCounter += startingBet * 2
+		document.getElementById('playerCards').classList.add('playerWinsAnimation')
 		messageArea.textContent = 'Winner Winner Chicken Dinner'
 	} else {
 		messageArea.textContent = 'Dealer wins!'
+		document
+			.getElementById('playerCards')
+			.classList.remove('playerWinsAnimation')
 	}
 	isRoundOver = true
 	updateBetText()
@@ -321,7 +325,7 @@ startHand.addEventListener('click', function () {
 	hiddenCard.innerHTML = ''
 	playerCardsImage.innerHTML = ''
 	dealerCardsImage.innerHTML = ''
-	messageArea.textContent = 'Good Luck!'
+	messageArea.textContent = ''
 	updateBetText()
 	updateHandTotal()
 
