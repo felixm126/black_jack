@@ -74,8 +74,10 @@ button.buttonContainer {
 	align-items: flex-end;
 	width: 50px;
 }
-
-.buttonContainer :hover {
+.buttonVisible {
+	display: block;
+}
+.buttonContainer:hover {
 	background-color: blue;
 	color: white;
 }

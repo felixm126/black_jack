@@ -1,6 +1,7 @@
 const startHand = document.querySelector('#startHand')
 const hit = document.querySelector('#hit')
 const stay = document.querySelector('#stay')
+const doubleDown = document.querySelector('#double')
 const restart = document.querySelector('#restart')
 const playerSum = document.querySelector('#playerSum')
 const dealerSum = document.querySelector('#dealerSum')
@@ -10,9 +11,9 @@ const dealerCardsImage = document.querySelector('.dealerCards')
 const messageArea = document.getElementById('message')
 const apiUrl = 'https://deckofcardsapi.com/api/deck/'
 const newDeck = 'new/shuffle/?deck_count=6'
-const minBet = 25
+const minBet = 50
 
-let startingBet = 25
+let startingBet = 50
 let bankCounter = 1000
 let playerCards = []
 let dealerCards = []
@@ -25,12 +26,19 @@ let backCardUrl = 'https://www.deckofcardsapi.com/static/img/back.png'
 document.addEventListener('DOMContentLoaded', () => {
 	const toggleButton = document.getElementById('toggleButton')
 	toggleButton.addEventListener('click', () => {
-		increase.classList.toggle('buttonContainer')
-		decrease.classList.toggle('buttonContainer')
-		startHand.classList.toggle('buttonContainer')
-		hit.classList.toggle('buttonContainer')
-		stay.classList.toggle('buttonContainer')
-		restart.classList.toggle('buttonContainer')
+		const buttons = [
+			increase,
+			decrease,
+			startHand,
+			hit,
+			doubleDown,
+			stay,
+			restart,
+		]
+
+		buttons.forEach((button) => {
+			button.classList.toggle('buttonContainer')
+		})
 		toggleButton.style.display = 'none'
 	})
 })
@@ -89,40 +97,33 @@ async function dealNewHand() {
 
 		const dealerTotal = checkHandValue(dealerCards, false)
 		const isBlackJack = checkBJ()
-		const hiddenImg = hiddenCard.querySelector('img')
 
 		if (isBlackJack === 'push') {
-			if (hiddenImg) {
-				hiddenImg.src = hiddenCardUrl
-				dealerSum.textContent = dealerTotal.toString()
-			}
+			revealHiddenCard()
+			dealerSum.textContent = dealerTotal.toString()
+
 			ableToHit = false
 			isRoundOver = true
 			bankCounter += startingBet
 			updateBetText()
-			console.log(`Push: ${startingBet}`)
 			return
 		} else if (isBlackJack === 'player') {
-			if (hiddenImg) {
-				hiddenImg.src = hiddenCardUrl
-				dealerSum.textContent = dealerTotal.toString()
-			}
+			revealHiddenCard()
+			dealerSum.textContent = dealerTotal.toString()
 			ableToHit = false
 			isRoundOver = true
 			bankCounter += startingBet * 2.5
-			console.log(`Win: ${startingBet * 2.5}`)
+			alert(`BLACKJACK! Nice hand!`)
 			return
 		} else if (isBlackJack === 'dealer') {
-			if (hiddenImg) {
-				hiddenImg.src = hiddenCardUrl
-				dealerSum.textContent = dealerTotal.toString()
-			}
+			revealHiddenCard()
+			dealerSum.textContent = dealerTotal.toString()
+
 			ableToHit = false
 			isRoundOver = true
-			console.log(`Lose: ${startingBet}`)
 			return
 		} else {
-			console.log('No blackjack')
+			console.log('Continue')
 		}
 	} catch (error) {
 		console.error('Error dealing new hand')
@@ -150,33 +151,33 @@ function playersTurn() {
 }
 
 async function dealersTurn() {
-	if (!ableToHit || isRoundOver) {
-		// Reveal the hidden second dealer card
-		const hiddenImg = hiddenCard.querySelector('img')
-		if (hiddenImg) {
-			hiddenImg.src = hiddenCardUrl
-		}
-		let dealerTotal = checkHandValue(dealerCards, true)
-		dealerSum.textContent = dealerTotal.toString()
+	try {
+		if (!ableToHit || isRoundOver) {
+			// Reveal the hidden second dealer card
+			revealHiddenCard()
+			let dealerTotal = checkHandValue(dealerCards, true)
+			dealerSum.textContent = dealerTotal.toString()
 
-		if (checkHandValue(playerCards) > 21) {
-			checkWin()
-		} else {
-			while (dealerTotal < 17) {
-				const drawnCard = await drawCard(1)
-				if (drawnCard) {
-					dealerCards.push(drawnCard)
-					loadImage(drawnCard.image, dealerCardsImage)
-					dealerTotal = checkHandValue(dealerCards, isRoundOver)
-					dealerSum.textContent = dealerTotal.toString()
+			if (checkHandValue(playerCards) > 21) {
+				checkWin()
+			} else {
+				while (dealerTotal < 17) {
+					const drawnCard = await drawCard(1)
+					if (drawnCard) {
+						dealerCards.push(drawnCard)
+						loadImage(drawnCard.image, dealerCardsImage)
+						dealerTotal = checkHandValue(dealerCards, isRoundOver)
+						dealerSum.textContent = dealerTotal.toString()
+					}
 				}
+				checkWin()
 			}
-			checkWin()
 		}
+	} catch (error) {
+		console.log('error during dealers turn', error)
 	}
 }
 
-// Check the number value of the cards rank in total
 function checkHandValue(cards) {
 	let value = 0
 	let numAces = 0
@@ -241,6 +242,13 @@ function checkWin() {
 	updateBetText()
 }
 
+function revealHiddenCard() {
+	const hiddenImg = hiddenCard.querySelector('img')
+	if (hiddenImg) {
+		hiddenImg.src = hiddenCardUrl
+	}
+}
+
 function loadImage(url, cardContainer) {
 	const image = new Image(200, 200)
 	image.src = url
@@ -269,11 +277,11 @@ function restartGame() {
 	ableToHit = true
 	isRoundOver = false
 	bankCounter = 1000
-	startingBet = 25
+	startingBet = 50
 	hiddenCard.innerHTML = ''
 	playerCardsImage.innerHTML = ''
 	dealerCardsImage.innerHTML = ''
-	messageArea.innerHTML = 'Came back for more huh?'
+	messageArea.innerHTML = 'Ready to play?'
 	updateBetText()
 	updateHandTotal()
 	newGame()
@@ -285,10 +293,10 @@ increase.addEventListener('click', function () {
 			startingBet += minBet
 			updateBetText()
 		} else {
-			alert('You do not have enough. Lower your bet.')
+			return
 		}
 	} else {
-		alert('Not enough funds.')
+		return
 	}
 })
 
@@ -298,10 +306,10 @@ decrease.addEventListener('click', function () {
 			startingBet -= minBet
 			updateBetText()
 		} else {
-			alert('Minimum is $25')
+			return
 		}
 	} else {
-		alert('Cant go any lower')
+		return
 	}
 })
 
@@ -347,6 +355,28 @@ hit.addEventListener('click', async () => {
 			}
 		}
 	}
+})
+
+doubleDown.addEventListener('click', async () => {
+	// Check to see if Player is allowed to double
+	if (isRoundOver || !ableToHit) {
+		return
+	} else if (playerCards.length > 2) {
+		return
+	}
+	startingBet *= 2
+	updateBetText()
+	bankCounter -= startingBet
+	updateBetText()
+	const drawnCard = await drawCard(1)
+	if (drawnCard) {
+		playerCards.push(drawnCard)
+		loadImage(drawnCard.image, playerCardsImage)
+		updateHandTotal()
+	}
+	ableToHit = false
+	isRoundOver = true
+	dealersTurn()
 })
 
 stay.addEventListener('click', () => {

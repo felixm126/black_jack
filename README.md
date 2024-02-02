@@ -8,7 +8,7 @@
 ## Technologies Used
 
 - HTML/CSS
-- JavaScript,
+- JavaScript
 - RESTful API
 - Axios
 - Deployed with Surge
@@ -25,17 +25,13 @@ Upon launching the application, players are greeted by the home screen where the
 
 Players will start with a bankroll of $1000. They can select bet amount and click Start Hand to initiate the session.
 
-Players are prompted with options to `Hit`, `Stand`, `Double`, or `Split`.
-
-- The split feature will only work with two of the same face value cards
+Players are prompted with options to `Hit`, `Stand`, `Double`, as well as buttons to `Increase` or `Decrease` bet sizes in increments of $50.
 
 If the player's hand total exceeds 21, they will lose the round and their bet.
 
 A notification will appear indicating Win or Loss of their bet from their bankroll.
 
-An option to restart the game is offered if players bankroll reaches 0.
-
-High scores will be tallied and shown with the restart game feature.
+An option to restart the game is offered if player's bankroll is less than $150.
 
 ## How to play
 
@@ -47,24 +43,26 @@ High scores will be tallied and shown with the restart game feature.
 
 # Gameplay
 
-1. Once the game has started, you will be prompted to select your bet. Click Start Hand to start the round.
+1. Once the game has started, you will be prompted to select your bet then click Start Hand to start the round.
 
 2. After you click start hand, you will be dealt two cards faceup and the dealer will also be dealt two cards with one facedown.
 
 3. Player's turn:
 
 - You can choose to `Hit` or `Stand`.
-- Additionally if you like your hand, you are able to `Double` but you will not be able to hit again.
-- If the first two cards you are dealt are pairs, you have the option of `Split`.
-  - Doing so will require an additional bet equal to your original bet amount.
+- Additionally if you like your hand, you are able to `Double` but you will not be able to hit again and you double your original bet.
 
 4. Dealer's Turn:
 
-- After you stand, the dealer reveals their hidden card and will hit until either they reach a hard 17 or bust.
+- After you stand, the dealer reveals their hidden card and will hit until either they reach a 17 or bust.
 
 ## How to Win
 
-The goal of the game is to have a higher total hand value than the dealer. You can do this by: 1. Have a higher value than the dealer without busting. 2. Stand on your hand that has a value under 21 with the dealer busting. 3. **Blackjack!** - Have a hand value equal to 21 from the first two cards dealt to you. - In the instance the dealer also 21, you push.
+The goal of the game is to have a higher total hand value than the dealer. You can do this by:
+
+1. Having a higher value than the dealer without busting.
+2. Stand on your hand that has a value under 21 with the dealer going over 21.
+3. **Blackjack!** - Have a hand value equal to 21 from the first two cards dealt to you. - In the instance the dealer also 21, you push.
 
 ## Key Blackjack Terminology and Values
 
@@ -90,7 +88,6 @@ Bankroll: How much money you have to play.
 
 - Add dark mode feature
 - Local storage for High Scores
-- Using Google fonts
 - Have side-bet feature
   Match the Dealer: Having the same card as the dealer pays a separate amount
 
@@ -98,6 +95,8 @@ Bankroll: How much money you have to play.
 
 This project uses resources from the following websites:
 
-- [Deck of Cards API](https://deckofcardsapi.com/) functionalities:
-  Creating a new shuffled deck
-  Drawing a card
+[Deck of Cards API](https://deckofcardsapi.com/) functionalities:
+
+- Creating 6 new shuffled decks.
+- Drawing a card.
+- Getting the information of the card including: Value, Suit, Picture of the card.
